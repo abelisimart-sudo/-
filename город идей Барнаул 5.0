@@ -1,0 +1,2330 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ГОРОД ИДЕЙ — БАРНАУЛ | Твой голос = реальные изменения</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ========== ОСНОВНЫЕ СТИЛИ ========== */
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --primary-light: #60A5FA;
+            --secondary: #8B5CF6;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --dark: #1E293B;
+            --gray: #64748B;
+            --light: #F8FAFC;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: var(--gradient);
+            min-height: 100vh;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+        
+        /* ========== ШАПКА ========== */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            animation: slideDown 0.5s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+        
+        .logo-text {
+            font-weight: 900;
+            font-size: 1.8rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+        
+        /* === РЕЖИМ АДМИН/ПОЛЬЗОВАТЕЛЬ === */
+        .mode-switcher {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 1rem;
+            background: rgba(37, 99, 235, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+        }
+        
+        .mode-label {
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            padding: 0.25rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mode-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: transparent;
+            color: var(--gray);
+        }
+        
+        .mode-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(37, 99, 235, 0.1);
+            padding: 0.5rem;
+            border-radius: 16px;
+        }
+        
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .tab-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.15);
+        }
+        
+        .tab-badge {
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+        
+        /* ========== ГЛАВНЫЙ КОНТЕЙНЕР ========== */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ========== СТРАНИЦА ИГРЫ (ГЛАВНАЯ) ========== */
+        .game-hero {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.4rem;
+            color: var(--gray);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+        
+        .city-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+        
+        .progress-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+        
+        .progress-bar {
+            height: 24px;
+            background: var(--light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            transition: width 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* ========== QR-СЕКЦИЯ ========== */
+        .qr-section {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 28px;
+            padding: 3rem;
+            text-align: center;
+            margin: 3rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .qr-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .qr-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .qr-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+        
+        .qr-container {
+            display: inline-block;
+            padding: 30px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(37, 99, 235, 0.2);
+            margin: 2rem 0;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .qr-placeholder {
+            width: 250px;
+            height: 250px;
+            background: #f8fafc;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary-light);
+            border: 3px dashed var(--primary-light);
+        }
+        
+        .qr-instructions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+        
+        .qr-step {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .qr-step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+        
+        /* ========== КАРТА ========== */
+        .map-container {
+            background: white;
+            border-radius: 28px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        #map {
+            height: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* ========== СТРАНИЦА ПРОФИЛЯ ========== */
+        .profile-header {
+            background: white;
+            border-radius: 28px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .user-level {
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .user-name {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .badge {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            width: 150px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .badge-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .badge.locked {
+            opacity: 0.3;
+            filter: grayscale(1);
+        }
+        
+        /* ========== СТРАНИЦА РЕЙТИНГА ========== */
+        .rating-filters {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .location-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .location-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .location-rank {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            min-width: 60px;
+        }
+        
+        .location-rating {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--dark);
+        }
+        
+        .rating-indicator {
+            width: 10px;
+            height: 40px;
+            border-radius: 5px;
+        }
+        
+        .rating-indicator.high { background: var(--success); }
+        .rating-indicator.medium { background: var(--warning); }
+        .rating-indicator.low { background: var(--danger); }
+        .rating-indicator.none { background: var(--gray); opacity: 0.3; }
+        
+        /* ========== СТРАНИЦА ИДЕЙ ========== */
+        .ideas-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        
+        .idea-form {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .idea-list {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .idea-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--light);
+        }
+        
+        .idea-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-review { background: #DBEAFE; color: #1E40AF; }
+        .status-progress { background: #D1FAE5; color: #065F46; }
+        .status-done { background: #D1FAE5; color: #065F46; }
+        
+        /* ========== СТРАНИЦА АНАЛИТИКИ ========== */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        /* ========== МОДАЛЬНЫЕ ОКНА ========== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 28px;
+            padding: 3rem;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: scaleIn 0.3s ease-out;
+        }
+        
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        /* ========== ФОРМЫ ========== */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            margin-top: 0.5rem;
+        }
+        
+        .star {
+            font-size: 2rem;
+            color: #E5E7EB;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .star:hover, .star.active {
+            color: var(--warning);
+        }
+        
+        /* ========== КНОПКИ ========== */
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(37, 99, 235, 0.4);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary-light);
+        }
+        
+        .btn-large {
+            padding: 1.2rem 2.5rem;
+            font-size: 1.1rem;
+        }
+        
+        /* ========== УВЕДОМЛЕНИЯ ========== */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 400px;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .notification.hidden {
+            display: none;
+        }
+        
+        /* ========== АДАПТИВНОСТЬ ========== */
+        @media (max-width: 1024px) {
+            .ideas-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .city-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .qr-instructions {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ========== АНИМАЦИИ ========== */
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background: var(--primary);
+            opacity: 0;
+            z-index: 9999;
+            animation: confetti-fall 1s ease-out forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div>
+                    <div class="logo-text">ГОРОД ИДЕЙ</div>
+                    <div class="logo-subtitle">БАРНАУЛ | Твой голос = реальные изменения</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center;">
+                <!-- Переключатель режима -->
+                <div class="mode-switcher">
+                    <div class="mode-label">Режим:</div>
+                    <div class="mode-toggle">
+                        <button class="mode-btn active" data-mode="user">Пользователь</button>
+                        <button class="mode-btn" data-mode="admin">Администратор</button>
+                    </div>
+                </div>
+                
+                <div class="nav-tabs">
+                    <button class="tab-btn active" data-page="game">
+                        <i class="fas fa-gamepad"></i> Игра
+                        <span class="tab-badge" id="gameBadge">!</span>
+                    </button>
+                    <button class="tab-btn" data-page="profile">
+                        <i class="fas fa-user"></i> Мой профиль
+                    </button>
+                    <button class="tab-btn" data-page="rating">
+                        <i class="fas fa-chart-line"></i> Рейтинг
+                    </button>
+                    <button class="tab-btn" data-page="ideas">
+                        <i class="fas fa-lightbulb"></i> Идеи
+                    </button>
+                    <button class="tab-btn" data-page="analytics">
+                        <i class="fas fa-chart-bar"></i> Аналитика
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Главный контейнер -->
+    <main class="main-container">
+        <!-- Страница 1: ИГРА -->
+        <div class="page active" id="game">
+            <div class="game-hero">
+                <h1 class="hero-title">🎮 СОЗДАЙ ИДЕАЛЬНЫЙ БАРНАУЛ</h1>
+                <p class="hero-subtitle">
+                    Это не просто оценка — это игра, где ты становишься соавтором города.<br>
+                    Каждая твоя оценка приближает реальные изменения в нашем любимом городе.
+                </p>
+                
+                <div class="city-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRatings">0</div>
+                        <div class="stat-label">оценок от жителей</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalIdeas">0</div>
+                        <div class="stat-label">предложенных идей</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeUsers">0</div>
+                        <div class="stat-label">активных участников</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="completedIdeas">0</div>
+                        <div class="stat-label">реализованных улучшений</div>
+                    </div>
+                </div>
+                
+                <div class="progress-section">
+                    <h3 class="progress-title">🏆 Цель города: 1000 оценок для реальных изменений</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="cityProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>Начинаем путь</span>
+                        <span id="progressText">0/1000 оценок</span>
+                        <span>Идеальный город</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR-секция -->
+            <div class="qr-section">
+                <h2 class="qr-title">📱 ПРИГЛАСИ ДРУЗЕЙ В ИГРУ!</h2>
+                <p class="qr-subtitle">
+                    Поделись ссылкой с друзьями, чтобы вместе сделать Барнаул лучше!<br>
+                    Вместе мы создадим идеальный город.
+                </p>
+                
+                <div class="qr-container">
+                    <div class="qr-placeholder" id="qrPlaceholder">
+                        <i class="fas fa-image"></i>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 1rem; color: var(--gray); font-size: 0.9rem;">
+                    Ссылка для приглашения: <strong id="appLink">город-идей.барнаул</strong>
+                </p>
+                
+                <div class="qr-instructions">
+                    <div class="qr-step">
+                        <div class="qr-step-number">1</div>
+                        <h4>Поделись ссылкой</h4>
+                        <p>Пригласи друзей в игру</p>
+                    </div>
+                    <div class="qr-step">
+                        <div class="qr-step-number">2</div>
+                        <h4>Оцени 3 места</h4>
+                        <p>Стань "Жителем" игры</p>
+                    </div>
+                    <div class="qr-step">
+                        <div class="qr-step-number">3</div>
+                        <h4>Предложи идею</h4>
+                        <p>Стань "Создателем города"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карта -->
+            <div class="map-container">
+                <div class="map-header">
+                    <h2 style="font-size: 1.8rem; font-weight: 700; color: var(--dark);">
+                        <i class="fas fa-map-marked-alt"></i> 10 точек Барнаула ждут твоей оценки
+                    </h2>
+                    <button class="btn btn-secondary" onclick="showAllLocations()">
+                        <i class="fas fa-eye"></i> Показать все
+                    </button>
+                </div>
+                <div id="map"></div>
+            </div>
+
+            <!-- Достижения -->
+            <div class="progress-section">
+                <h3 class="progress-title">🏅 Твои достижения в игре</h3>
+                <div class="badges-container" id="userBadgesPreview">
+                    <!-- Бейджи будут добавлены через JS -->
+                </div>
+                <button class="btn btn-primary" onclick="switchPage('profile')">
+                    <i class="fas fa-trophy"></i> Смотреть все достижения
+                </button>
+            </div>
+        </div>
+
+        <!-- Страница 2: ПРОФИЛЬ -->
+        <div class="page" id="profile">
+            <div class="profile-header">
+                <div class="user-level" id="userLevel">Уровень: Житель</div>
+                <h1 class="user-name" id="userName">Игрок</h1>
+                <p style="color: var(--gray); margin-bottom: 2rem;">Твой вклад в развитие города</p>
+                
+                <div class="city-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="userRatings">0</div>
+                        <div class="stat-label">твоих оценок</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userIdeas">0</div>
+                        <div class="stat-label">твоих идей</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userBadgesCount">0</div>
+                        <div class="stat-label">твоих бейджей</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="userRank">#1</div>
+                        <div class="stat-label">твой рейтинг</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <h3 class="progress-title">📈 Твой прогресс</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="userProgress" style="width: 0%"></div>
+                </div>
+                <div class="progress-info">
+                    <span>Новичок</span>
+                    <span id="userProgressText">0/10 оценок</span>
+                    <span>Эксперт города</span>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <h3 class="progress-title">🏆 Твои бейджи</h3>
+                <div class="badges-container" id="userBadgesFull">
+                    <!-- Все бейджи будут добавлены через JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Страница 3: РЕЙТИНГ -->
+        <div class="page" id="rating">
+            <div class="game-hero">
+                <h1 class="hero-title">📊 РЕЙТИНГ ГОРОДА</h1>
+                <p class="hero-subtitle">
+                    На основе реальных оценок жителей. Смотри, какие места нуждаются в улучшении,<br>
+                    а какие уже стали любимыми у горожан.
+                </p>
+            </div>
+
+            <div class="rating-filters">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="sortByRating()">
+                        <i class="fas fa-star"></i> По рейтингу
+                    </button>
+                    <button class="btn btn-secondary" onclick="sortByVotes()">
+                        <i class="fas fa-users"></i> По количеству оценок
+                    </button>
+                    <button class="btn btn-secondary" onclick="filterByCategory()">
+                        <i class="fas fa-filter"></i> По категории
+                    </button>
+                </div>
+            </div>
+
+            <div id="ratingList">
+                <!-- Список локаций будет добавлен через JS -->
+            </div>
+        </div>
+
+        <!-- Страница 4: ИДЕИ -->
+        <div class="page" id="ideas">
+            <div class="game-hero">
+                <h1 class="hero-title">💡 ПРЕДЛОЖИ ИДЕЮ</h1>
+                <p class="hero-subtitle">
+                    Видишь, что можно улучшить? Расскажи об этом! Твои идеи могут стать реальностью.<br>
+                    Каждое предложение рассматривается администрацией города.
+                </p>
+            </div>
+
+            <div class="ideas-container">
+                <div class="idea-form">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Новая идея</h3>
+                    <form id="ideaForm" onsubmit="submitIdea(event)">
+                        <div class="form-group">
+                            <label class="form-label">Выберите место</label>
+                            <select class="form-control" id="ideaLocation" required>
+                                <option value="">-- Выберите объект --</option>
+                                <!-- Опции будут добавлены через JS -->
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Категория</label>
+                            <select class="form-control" id="ideaCategory" required>
+                                <option value="">-- Выберите категорию --</option>
+                                <option value="cleanliness">Чистота и уборка</option>
+                                <option value="facilities">Скамейки, урны, освещение</option>
+                                <option value="greenery">Озеленение</option>
+                                <option value="safety">Безопасность</option>
+                                <option value="infrastructure">Инфраструктура</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Опишите вашу идею</label>
+                            <textarea class="form-control" id="ideaDescription" rows="4" 
+                                      placeholder="Что вы предлагаете улучшить?..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Ваш email (для обратной связи)</label>
+                            <input type="email" class="form-control" id="ideaEmail" 
+                                   placeholder="email@example.com">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-paper-plane"></i> Отправить идею
+                        </button>
+                    </form>
+                </div>
+
+                <div class="idea-list">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Предложенные идеи</h3>
+                    <div id="ideasList">
+                        <!-- Список идей будет добавлен через JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Страница 5: АНАЛИТИКА -->
+        <div class="page" id="analytics">
+            <div class="game-hero">
+                <h1 class="hero-title">📈 АНАЛИТИКА</h1>
+                <p class="hero-subtitle">
+                    Статистика и аналитика для администрации города.<br>
+                    Экспортируйте данные для отчётов и принятия решений.
+                </p>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Оценки по критериям</h3>
+                    <canvas id="criteriaChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Активность по дням</h3>
+                    <canvas id="activityChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Распределение идей</h3>
+                    <canvas id="ideasChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Топ проблемных мест</h3>
+                    <canvas id="problemsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <h3 class="progress-title">📊 Экспорт данных</h3>
+                <div class="export-buttons">
+                    <button class="btn btn-primary" onclick="exportData('csv')">
+                        <i class="fas fa-file-csv"></i> Экспорт в CSV
+                    </button>
+                    <button class="btn btn-primary" onclick="exportData('pdf')">
+                        <i class="fas fa-file-pdf"></i> Экспорт в PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportData('json')">
+                        <i class="fas fa-code"></i> Экспорт в JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно оценки -->
+    <div class="modal" id="ratingModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeRatingModal()">&times;</button>
+            <h2 id="ratingLocationName" style="margin-bottom: 1rem; color: var(--dark);"></h2>
+            
+            <div id="photoUploadSection" style="margin-bottom: 2rem;">
+                <label class="form-label">Фото места (может предложить каждый, добавляет администратор)</label>
+                <div id="photoUploadArea" style="border: 2px dashed var(--primary-light); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer;"
+                     onclick="if (isAdminMode) document.getElementById('photoInput').click(); else showNotification('Загрузку фото может выполнить только администратор', 'info')">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary-light); margin-bottom: 1rem;"></i>
+                    <p id="photoUploadText">Перетащите фото сюда или кликните для выбора</p>
+                    <p style="font-size: 0.9rem; color: var(--gray); margin-top: 0.5rem;">
+                        Администратор добавит фото после проверки
+                    </p>
+                </div>
+                <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                <img id="photoPreview" style="max-width: 100%; border-radius: 12px; margin-top: 1rem; display: none;">
+            </div>
+            
+            <div class="rating-form">
+                <h3 style="margin-bottom: 1.5rem; color: var(--dark);">Оцените по 5-балльной шкале:</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Чистота территории</label>
+                    <div class="star-rating" id="cleanlinessRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Состояние скамеек, урн, освещения</label>
+                    <div class="star-rating" id="facilitiesRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Здоровье деревьев и газонов</label>
+                    <div class="star-rating" id="greeneryRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Безопасность и доступность</label>
+                    <div class="star-rating" id="safetyRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Общее впечатление</label>
+                    <div class="star-rating" id="overallRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="submitLocationRating()" style="width: 100%;">
+                    <i class="fas fa-star"></i> Отправить оценку
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div class="notification hidden" id="notification">
+        <div id="notificationIcon" style="font-size: 2rem;"></div>
+        <div>
+            <strong id="notificationTitle"></strong>
+            <p id="notificationMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        // ========== КОНСТАНТЫ И ПЕРЕМЕННЫЕ ==========
+        const BADGES = {
+            firstRating: { icon: '🏠', name: 'Первая оценка', desc: 'Оценил своё первое место', earned: false },
+            cleanExpert: { icon: '🧹', name: 'Эксперт чистоты', desc: '10 оценок по чистоте', earned: false },
+            parkExpert: { icon: '🌳', name: 'Знаток парков', desc: 'Оценил 5 парков', earned: false },
+            ideaGenerator: { icon: '💡', name: 'Генератор идей', desc: 'Предложил 5 идей', earned: false },
+            cityCreator: { icon: '👑', name: 'Создатель города', desc: 'Топ 1% активных', earned: false },
+            safetyExpert: { icon: '🛡️', name: 'Эксперт безопасности', desc: '10 оценок по безопасности', earned: false },
+            greeneryExpert: { icon: '🌿', name: 'Эксперт озеленения', desc: '10 оценок по озеленению', earned: false },
+            facilitiesExpert: { icon: '🪑', name: 'Эксперт инфраструктуры', desc: '10 оценок по инфраструктуре', earned: false }
+        };
+
+        const LEVELS = [
+            { name: 'Новичок', minRatings: 0 },
+            { name: 'Житель', minRatings: 3 },
+            { name: 'Активист', minRatings: 10 },
+            { name: 'Эксперт', minRatings: 25 },
+            { name: 'Создатель города', minRatings: 50 }
+        ];
+
+        // Данные объектов Барнаула
+        let locations = [
+            {
+                id: 1,
+                name: "Центральный парк культуры и отдыха им. В. М. Шукшина",
+                lat: 53.3606,
+                lng: 83.7636,
+                category: "Парк",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Крупнейший парк культуры и отдыха в Барнауле, названный в честь знаменитого писателя, актёра и режиссёра Василия Шукшина.",
+                address: "ул. Юрина, 204"
+            },
+            {
+                id: 2,
+                name: "Нагорный парк",
+                lat: 53.3489,
+                lng: 83.7773,
+                category: "Парк",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Парк на возвышенности с живописным видом на город и реку Обь.",
+                address: "Нагорный парк, Барнаул"
+            },
+            {
+                id: 3,
+                name: "Площадь Октября",
+                lat: 53.3547,
+                lng: 83.7678,
+                category: "Площадь",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Центральная площадь города, место проведения массовых мероприятий и праздников.",
+                address: "Площадь Октября, Барнаул"
+            },
+            {
+                id: 4,
+                name: "Парк «Южный»",
+                lat: 53.3314,
+                lng: 83.7686,
+                category: "Парк",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Благоустроенный парк в Южном микрорайоне с современной инфраструктурой.",
+                address: "Южный микрорайон, Барнаул"
+            },
+            {
+                id: 5,
+                name: "Набережная Оби (от моста до ЦПКиО)",
+                lat: 53.3667,
+                lng: 83.7586,
+                category: "Набережная",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Благоустроенная набережная реки Обь с пешеходными зонами и видами на реку.",
+                address: "Набережная Оби, Барнаул"
+            },
+            {
+                id: 6,
+                name: "Сквер им. Ленина",
+                lat: 53.3601,
+                lng: 83.7682,
+                category: "Сквер",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Исторический сквер в центре города с памятником В.И. Ленину.",
+                address: "Сквер им. Ленина, Барнаул"
+            },
+            {
+                id: 7,
+                name: "Парк «Детский» (Южный микрорайон)",
+                lat: 53.3268,
+                lng: 83.7814,
+                category: "Парк",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Специализированный парк для детей с игровыми и спортивными площадками.",
+                address: "Южный микрорайон, Барнаул"
+            },
+            {
+                id: 8,
+                name: "Площадь Славы",
+                lat: 53.3572,
+                lng: 83.7589,
+                category: "Площадь",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Мемориальная площадь, посвящённая героям Великой Отечественной войны.",
+                address: "Площадь Славы, Барнаул"
+            },
+            {
+                id: 9,
+                name: "Бульвар Победы",
+                lat: 53.3514,
+                lng: 83.7842,
+                category: "Бульвар",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Пешеходный бульвар с аллеей памяти героям Великой Отечественной войны.",
+                address: "Бульвар Победы, Барнаул"
+            },
+            {
+                id: 10,
+                name: "Парк «Лесная сказка»",
+                lat: 53.3403,
+                lng: 83.7511,
+                category: "Парк",
+                rating: 0,
+                votes: 0,
+                photo: null,
+                criteria: { cleanliness: 0, facilities: 0, greenery: 0, safety: 0, overall: 0 },
+                description: "Лесопарковая зона с экологическими тропами и зонами отдыха.",
+                address: "Парк «Лесная сказка», Барнаул"
+            }
+        ];
+
+        let currentUser = {
+            name: "Игрок",
+            ratings: 0,
+            ideas: 0,
+            badges: [],
+            level: 0,
+            ratedLocations: [],
+            photoUploads: 0
+        };
+
+        let ideas = [];
+        let currentRatingLocation = null;
+        let map;
+        let markers = [];
+        let isAdminMode = false; // Режим администратора
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromStorage();
+            initMap();
+            initNavigation();
+            initStarRatings();
+            initPhotoUpload();
+            initModeSwitcher(); // Инициализация переключателя режима
+            updateStats();
+            updateRatingList();
+            updateIdeasList();
+            initCharts();
+            updatePhotoUploadUI(); // Обновляем интерфейс загрузки фото
+            
+            // Показываем уведомление-приветствие
+            setTimeout(() => {
+                showNotification('🎮 Добро пожаловать в игру "Создай идеальный Барнаул"!', 'success');
+            }, 1000);
+        });
+
+        // ========== ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА ==========
+        function initModeSwitcher() {
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const mode = this.getAttribute('data-mode');
+                    switchMode(mode);
+                });
+            });
+        }
+
+        function switchMode(mode) {
+            isAdminMode = mode === 'admin';
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+            });
+            
+            // Обновляем интерфейс загрузки фото
+            updatePhotoUploadUI();
+            
+            // Показываем уведомление
+            const modeText = isAdminMode ? 'администратора' : 'пользователя';
+            showNotification(`Режим ${modeText} активирован`, 'info');
+            
+            // Если открыто модальное окно, обновляем его
+            if (document.getElementById('ratingModal').style.display === 'flex') {
+                updatePhotoUploadUI();
+            }
+        }
+
+        function updatePhotoUploadUI() {
+            const uploadArea = document.getElementById('photoUploadArea');
+            const uploadText = document.getElementById('photoUploadText');
+            
+            if (isAdminMode) {
+                uploadArea.style.borderColor = 'var(--success)';
+                uploadText.textContent = 'Перетащите фото сюда или кликните для выбора (режим администратора)';
+                uploadText.style.color = 'var(--success)';
+            } else {
+                uploadArea.style.borderColor = 'var(--primary-light)';
+                uploadText.textContent = 'Загрузку фото может выполнить только администратор';
+                uploadText.style.color = 'var(--gray)';
+            }
+        }
+
+        // ========== ХРАНЕНИЕ ДАННЫХ ==========
+        function saveToStorage() {
+            const data = {
+                locations,
+                currentUser,
+                ideas,
+                lastUpdate: new Date().getTime()
+            };
+            localStorage.setItem('cityIdeasBarnaul', JSON.stringify(data));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('cityIdeasBarnaul');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    locations = data.locations || locations;
+                    currentUser = data.currentUser || currentUser;
+                    ideas = data.ideas || ideas;
+                } catch (e) {
+                    console.log('Ошибка загрузки данных');
+                }
+            }
+        }
+
+        // ========== КАРТА ==========
+        function initMap() {
+            map = L.map('map').setView([53.3606, 83.7637], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Добавляем маркеры
+            locations.forEach(location => {
+                const marker = L.marker([location.lat, location.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="
+                            width: 50px;
+                            height: 50px;
+                            background: ${location.votes > 0 ? 'var(--primary)' : 'var(--gray)'};
+                            border: 3px solid white;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: bold;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                            cursor: pointer;
+                        ">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>`,
+                        iconSize: [50, 50],
+                        iconAnchor: [25, 50]
+                    })
+                }).addTo(map);
+                
+                marker.on('click', () => {
+                    openRatingModal(location.id);
+                });
+                
+                markers.push(marker);
+            });
+        }
+
+        function showAllLocations() {
+            map.setView([53.3606, 83.7637], 13);
+            showNotification('Все 10 точек Барнаула отмечены на карте', 'info');
+        }
+
+        // ========== НАВИГАЦИЯ ==========
+        function initNavigation() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const page = this.getAttribute('data-page');
+                    switchPage(page);
+                });
+            });
+        }
+
+        function switchPage(pageId) {
+            // Скрываем все страницы
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Убираем активность со всех кнопок
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показываем выбранную страницу
+            document.getElementById(pageId).classList.add('active');
+            
+            // Активируем соответствующую кнопку
+            document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+            
+            // Обновляем данные на странице
+            if (pageId === 'profile') updateProfile();
+            if (pageId === 'rating') updateRatingList();
+            if (pageId === 'ideas') updateIdeasList();
+            if (pageId === 'analytics') updateCharts();
+        }
+
+        // ========== СТАТИСТИКА ==========
+        function updateStats() {
+            const totalRatings = locations.reduce((sum, loc) => sum + loc.votes, 0);
+            const totalIdeas = ideas.length;
+            const activeUsers = Math.floor(totalRatings / 3); // Примерная логика
+            const completedIdeas = ideas.filter(i => i.status === 'done').length;
+            
+            document.getElementById('totalRatings').textContent = totalRatings;
+            document.getElementById('totalIdeas').textContent = totalIdeas;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('completedIdeas').textContent = completedIdeas;
+            
+            // Прогресс города
+            const progress = Math.min((totalRatings / 1000) * 100, 100);
+            document.getElementById('cityProgress').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${totalRatings}/1000 оценок`;
+            
+            // Обновляем бейджи на главной
+            updateBadgesPreview();
+            
+            saveToStorage();
+        }
+
+        // ========== ПРОФИЛЬ ==========
+        function updateProfile() {
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userRatings').textContent = currentUser.ratings;
+            document.getElementById('userIdeas').textContent = currentUser.ideas;
+            document.getElementById('userBadgesCount').textContent = currentUser.badges.length;
+            
+            // Определяем уровень
+            const userLevel = LEVELS.findIndex(level => currentUser.ratings >= level.minRatings);
+            const nextLevel = LEVELS[userLevel + 1] || LEVELS[LEVELS.length - 1];
+            document.getElementById('userLevel').textContent = `Уровень: ${LEVELS[userLevel].name}`;
+            
+            // Прогресс до следующего уровня
+            const progress = nextLevel ? (currentUser.ratings / nextLevel.minRatings) * 100 : 100;
+            document.getElementById('userProgress').style.width = Math.min(progress, 100) + '%';
+            document.getElementById('userProgressText').textContent = nextLevel ? 
+                `${currentUser.ratings}/${nextLevel.minRatings} оценок` : 'Максимальный уровень!';
+            
+            // Обновляем бейджи
+            updateBadgesFull();
+        }
+
+        // ========== БЕЙДЖИ ==========
+        function updateBadgesPreview() {
+            const container = document.getElementById('userBadgesPreview');
+            container.innerHTML = '';
+            
+            Object.entries(BADGES).slice(0, 4).forEach(([key, badge]) => {
+                const isEarned = currentUser.badges.includes(key);
+                const badgeEl = document.createElement('div');
+                badgeEl.className = `badge ${isEarned ? '' : 'locked'}`;
+                badgeEl.innerHTML = `
+                    <div class="badge-icon">${badge.icon}</div>
+                    <h4>${badge.name}</h4>
+                    <p style="font-size: 0.8rem; color: var(--gray);">${badge.desc}</p>
+                `;
+                container.appendChild(badgeEl);
+            });
+        }
+
+        function updateBadgesFull() {
+            const container = document.getElementById('userBadgesFull');
+            container.innerHTML = '';
+            
+            Object.entries(BADGES).forEach(([key, badge]) => {
+                const isEarned = currentUser.badges.includes(key);
+                const badgeEl = document.createElement('div');
+                badgeEl.className = `badge ${isEarned ? '' : 'locked'}`;
+                badgeEl.innerHTML = `
+                    <div class="badge-icon">${badge.icon}</div>
+                    <h4>${badge.name}</h4>
+                    <p style="font-size: 0.8rem; color: var(--gray);">${badge.desc}</p>
+                    ${isEarned ? '<div style="color: var(--success); margin-top: 0.5rem;">✓ Получен</div>' : 
+                                 '<div style="color: var(--gray); margin-top: 0.5rem;">🔒 Не получен</div>'}
+                `;
+                container.appendChild(badgeEl);
+            });
+        }
+
+        function checkAndAwardBadges() {
+            const newBadges = [];
+            
+            // Первая оценка
+            if (currentUser.ratings === 1 && !currentUser.badges.includes('firstRating')) {
+                newBadges.push('firstRating');
+                showNotification(`🎉 Получен бейдж: "${BADGES.firstRating.name}"!`, 'success');
+                createConfetti();
+            }
+            
+            // 10 оценок по чистоте
+            if (currentUser.ratings >= 10 && !currentUser.badges.includes('cleanExpert')) {
+                newBadges.push('cleanExpert');
+                showNotification(`🏆 Получен бейдж: "${BADGES.cleanExpert.name}"!`, 'success');
+                createConfetti();
+            }
+            
+            // 5 парков
+            const ratedParks = locations.filter(l => 
+                l.category === 'Парк' && currentUser.ratedLocations.includes(l.id)
+            ).length;
+            if (ratedParks >= 5 && !currentUser.badges.includes('parkExpert')) {
+                newBadges.push('parkExpert');
+                showNotification(`🌳 Получен бейдж: "${BADGES.parkExpert.name}"!`, 'success');
+                createConfetti();
+            }
+            
+            // 5 идей
+            if (currentUser.ideas >= 5 && !currentUser.badges.includes('ideaGenerator')) {
+                newBadges.push('ideaGenerator');
+                showNotification(`💡 Получен бейдж: "${BADGES.ideaGenerator.name}"!`, 'success');
+                createConfetti();
+            }
+            
+            // Добавляем новые бейджи
+            currentUser.badges = [...new Set([...currentUser.badges, ...newBadges])];
+            updateBadgesPreview();
+        }
+
+        // ========== РЕЙТИНГ ==========
+        function updateRatingList() {
+            const container = document.getElementById('ratingList');
+            container.innerHTML = '';
+            
+            // Сортируем по рейтингу
+            const sorted = [...locations].sort((a, b) => b.rating - a.rating);
+            
+            sorted.forEach((location, index) => {
+                const card = document.createElement('div');
+                card.className = 'location-card';
+                card.onclick = () => openRatingModal(location.id);
+                
+                // Определяем индикатор
+                let indicatorClass = 'none';
+                if (location.votes > 0) {
+                    if (location.rating >= 4) indicatorClass = 'high';
+                    else if (location.rating >= 2.5) indicatorClass = 'medium';
+                    else indicatorClass = 'low';
+                }
+                
+                card.innerHTML = `
+                    <div class="location-rank">${index + 1}</div>
+                    <div class="rating-indicator ${indicatorClass}"></div>
+                    <div style="flex: 1;">
+                        <h3 style="margin-bottom: 0.5rem; color: var(--dark);">${location.name}</h3>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="location-rating">${location.rating.toFixed(1)}</div>
+                            <div style="color: var(--warning); font-size: 1.2rem;">
+                                ${'★'.repeat(Math.floor(location.rating))}${'☆'.repeat(5-Math.floor(location.rating))}
+                            </div>
+                        </div>
+                        <p style="color: var(--gray); margin-top: 0.5rem; font-size: 0.9rem;">
+                            <i class="fas fa-users"></i> ${location.votes} оценок | 
+                            <i class="fas fa-tag"></i> ${location.category}
+                        </p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); openRatingModal(${location.id})">
+                        <i class="fas fa-star"></i> Оценить
+                    </button>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function sortByRating() {
+            locations.sort((a, b) => b.rating - a.rating);
+            updateRatingList();
+            showNotification('Отсортировано по рейтингу', 'info');
+        }
+
+        function sortByVotes() {
+            locations.sort((a, b) => b.votes - a.votes);
+            updateRatingList();
+            showNotification('Отсортировано по количеству оценок', 'info');
+        }
+
+        // ========== ИДЕИ ==========
+        function updateIdeasList() {
+            // Заполняем выпадающий список
+            const select = document.getElementById('ideaLocation');
+            select.innerHTML = '<option value="">-- Выберите объект --</option>';
+            locations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location.id;
+                option.textContent = location.name;
+                select.appendChild(option);
+            });
+            
+            // Обновляем список идей
+            const container = document.getElementById('ideasList');
+            container.innerHTML = '';
+            
+            if (ideas.length === 0) {
+                container.innerHTML = '<p style="color: var(--gray); text-align: center; padding: 2rem;">Идей пока нет</p>';
+                return;
+            }
+            
+            ideas.slice().reverse().forEach(idea => {
+                const location = locations.find(l => l.id === idea.locationId);
+                const item = document.createElement('div');
+                item.className = 'idea-item';
+                
+                item.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <h4 style="color: var(--dark); margin-bottom: 0.5rem;">${idea.title || 'Идея'}</h4>
+                            <p style="color: var(--gray); font-size: 0.9rem;">
+                                <i class="fas fa-map-marker-alt"></i> ${location?.name || 'Неизвестно'}
+                            </p>
+                        </div>
+                        <span class="idea-status status-${idea.status}">${getStatusText(idea.status)}</span>
+                    </div>
+                    <p style="color: var(--dark); margin-bottom: 1rem;">${idea.description}</p>
+                    <div style="display: flex; justify-content: space-between; color: var(--gray); font-size: 0.8rem;">
+                        <span>${formatDate(idea.date)}</span>
+                        <span>${idea.category}</span>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function submitIdea(event) {
+            event.preventDefault();
+            
+            const locationId = parseInt(document.getElementById('ideaLocation').value);
+            const category = document.getElementById('ideaCategory').value;
+            const description = document.getElementById('ideaDescription').value;
+            const email = document.getElementById('ideaEmail').value;
+            
+            if (!locationId || !category || !description) {
+                showNotification('Заполните все обязательные поля', 'error');
+                return;
+            }
+            
+            const newIdea = {
+                id: Date.now(),
+                locationId,
+                category,
+                description,
+                email,
+                status: 'pending',
+                date: new Date().toISOString(),
+                title: `Идея для улучшения`
+            };
+            
+            ideas.push(newIdea);
+            currentUser.ideas++;
+            
+            // Проверяем бейджи
+            checkAndAwardBadges();
+            
+            // Обновляем интерфейс
+            updateIdeasList();
+            updateStats();
+            
+            // Очищаем форму
+            document.getElementById('ideaForm').reset();
+            
+            // Показываем уведомление
+            showNotification('💡 Идея успешно отправлена! Спасибо за ваш вклад.', 'success');
+            createConfetti();
+            
+            saveToStorage();
+        }
+
+        // ========== ОЦЕНКИ ==========
+        function initStarRatings() {
+            ['cleanliness', 'facilities', 'greenery', 'safety', 'overall'].forEach(type => {
+                const container = document.getElementById(`${type}Rating`);
+                if (container) {
+                    container.querySelectorAll('.star').forEach(star => {
+                        star.addEventListener('click', function() {
+                            const value = parseInt(this.getAttribute('data-value'));
+                            setStars(container, value);
+                        });
+                    });
+                }
+            });
+        }
+
+        function setStars(container, value) {
+            container.querySelectorAll('.star').forEach((star, index) => {
+                if (index < value) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function getStarValue(container) {
+            const stars = container.querySelectorAll('.star');
+            for (let i = stars.length; i > 0; i--) {
+                if (stars[i-1].classList.contains('active')) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        function openRatingModal(locationId) {
+            const location = locations.find(l => l.id === locationId);
+            if (!location) return;
+            
+            currentRatingLocation = location;
+            document.getElementById('ratingLocationName').textContent = location.name;
+            
+            // Сбрасываем звёзды
+            ['cleanliness', 'facilities', 'greenery', 'safety', 'overall'].forEach(type => {
+                setStars(document.getElementById(`${type}Rating`), 0);
+            });
+            
+            // Показываем существующее фото, если есть
+            const preview = document.getElementById('photoPreview');
+            if (location.photo) {
+                preview.src = location.photo;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+            
+            // Обновляем интерфейс загрузки
+            updatePhotoUploadUI();
+            
+            document.getElementById('ratingModal').style.display = 'flex';
+        }
+
+        function closeRatingModal() {
+            document.getElementById('ratingModal').style.display = 'none';
+        }
+
+        function initPhotoUpload() {
+            const fileInput = document.getElementById('photoInput');
+            const preview = document.getElementById('photoPreview');
+            
+            fileInput.addEventListener('change', function(e) {
+                if (!isAdminMode) {
+                    showNotification('Только администратор может загружать фото', 'error');
+                    return;
+                }
+                
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                    showNotification('Фото загружено администратором', 'success');
+                }
+            });
+        }
+
+        function submitLocationRating() {
+            if (!currentRatingLocation) return;
+            
+            // Получаем значения оценок
+            const ratings = {
+                cleanliness: getStarValue(document.getElementById('cleanlinessRating')),
+                facilities: getStarValue(document.getElementById('facilitiesRating')),
+                greenery: getStarValue(document.getElementById('greeneryRating')),
+                safety: getStarValue(document.getElementById('safetyRating')),
+                overall: getStarValue(document.getElementById('overallRating'))
+            };
+            
+            // Проверяем, что хотя бы один критерий оценен
+            const hasRating = Object.values(ratings).some(r => r > 0);
+            if (!hasRating) {
+                showNotification('Поставьте хотя бы одну оценку', 'error');
+                return;
+            }
+            
+            // Получаем фото (только если администратор)
+            const preview = document.getElementById('photoPreview');
+            if (preview.style.display !== 'none' && preview.src && isAdminMode) {
+                currentRatingLocation.photo = preview.src;
+                showNotification('Фото добавлено администратором', 'success');
+            }
+            
+            // Обновляем рейтинг
+            const location = currentRatingLocation;
+            const oldVotes = location.votes;
+            
+            // Обновляем каждый критерий
+            Object.keys(ratings).forEach(key => {
+                if (ratings[key] > 0) {
+                    const oldValue = location.criteria[key] || 0;
+                    location.criteria[key] = oldVotes === 0 ? 
+                        ratings[key] : 
+                        (oldValue * oldVotes + ratings[key]) / (oldVotes + 1);
+                }
+            });
+            
+            // Обновляем общий рейтинг
+            const criteriaValues = Object.values(location.criteria).filter(v => v > 0);
+            location.rating = criteriaValues.length > 0 ? 
+                criteriaValues.reduce((a, b) => a + b) / criteriaValues.length : 0;
+            location.votes++;
+            
+            // Обновляем статистику пользователя
+            if (!currentUser.ratedLocations.includes(location.id)) {
+                currentUser.ratedLocations.push(location.id);
+            }
+            currentUser.ratings++;
+            
+            // Проверяем бейджи
+            checkAndAwardBadges();
+            
+            // Обновляем интерфейс
+            updateStats();
+            updateRatingList();
+            updateProfile();
+            
+            // Закрываем модальное окно
+            closeRatingModal();
+            
+            // Показываем уведомление с достижениями
+            showNotification(
+                `⭐ Оценка отправлена! Твой вклад: ${currentUser.ratings} оценок.`, 
+                'success'
+            );
+            createConfetti();
+            
+            saveToStorage();
+        }
+
+        // ========== АНАЛИТИКА И ГРАФИКИ ==========
+        function initCharts() {
+            // Инициализация графиков
+            window.criteriaChart = new Chart(document.getElementById('criteriaChart'), {
+                type: 'bar',
+                data: getCriteriaData(),
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+            
+            window.activityChart = new Chart(document.getElementById('activityChart'), {
+                type: 'line',
+                data: getActivityData(),
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+            
+            window.ideasChart = new Chart(document.getElementById('ideasChart'), {
+                type: 'doughnut',
+                data: getIdeasData(),
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+            
+            window.problemsChart = new Chart(document.getElementById('problemsChart'), {
+                type: 'radar',
+                data: getProblemsData(),
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            if (window.criteriaChart) {
+                window.criteriaChart.data = getCriteriaData();
+                window.criteriaChart.update();
+            }
+            
+            if (window.activityChart) {
+                window.activityChart.data = getActivityData();
+                window.activityChart.update();
+            }
+            
+            if (window.ideasChart) {
+                window.ideasChart.data = getIdeasData();
+                window.ideasChart.update();
+            }
+            
+            if (window.problemsChart) {
+                window.problemsChart.data = getProblemsData();
+                window.problemsChart.update();
+            }
+        }
+
+        function getCriteriaData() {
+            const criteria = ['cleanliness', 'facilities', 'greenery', 'safety', 'overall'];
+            const labels = ['Чистота', 'Инфраструктура', 'Озеленение', 'Безопасность', 'Общее'];
+            const data = criteria.map(c => {
+                const total = locations.reduce((sum, loc) => sum + (loc.criteria[c] || 0), 0);
+                const count = locations.filter(loc => loc.criteria[c] > 0).length;
+                return count > 0 ? (total / count) : 0;
+            });
+            
+            return {
+                labels: labels,
+                datasets: [{
+                    label: 'Средний балл',
+                    data: data,
+                    backgroundColor: 'rgba(37, 99, 235, 0.5)',
+                    borderColor: 'rgb(37, 99, 235)',
+                    borderWidth: 1
+                }]
+            };
+        }
+
+        function getActivityData() {
+            // Генерируем тестовые данные за последние 7 дней
+            const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            const data = days.map(() => Math.floor(Math.random() * 20) + 5);
+            
+            return {
+                labels: days,
+                datasets: [{
+                    label: 'Оценок в день',
+                    data: data,
+                    borderColor: 'rgb(139, 92, 246)',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4
+                }]
+            };
+        }
+
+        function getIdeasData() {
+            const categories = ['Чистота', 'Инфраструктура', 'Озеленение', 'Безопасность', 'Другое'];
+            const data = [8, 12, 6, 4, 5]; // Примерные данные
+            
+            return {
+                labels: categories,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        'rgba(37, 99, 235, 0.7)',
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(16, 185, 129, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(239, 68, 68, 0.7)'
+                    ]
+                }]
+            };
+        }
+
+        function getProblemsData() {
+            const locationsWithRatings = locations.filter(l => l.votes > 0).slice(0, 5);
+            
+            return {
+                labels: locationsWithRatings.map(l => l.name.substring(0, 15) + '...'),
+                datasets: [{
+                    label: 'Проблемные места',
+                    data: locationsWithRatings.map(l => 5 - l.rating), // Обратный рейтинг
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    borderColor: 'rgb(239, 68, 68)',
+                    pointBackgroundColor: 'rgb(239, 68, 68)'
+                }]
+            };
+        }
+
+        function exportData(format) {
+            let data;
+            let filename;
+            let type;
+            
+            switch(format) {
+                case 'csv':
+                    data = convertToCSV();
+                    filename = 'город_идей_данные.csv';
+                    type = 'text/csv';
+                    break;
+                case 'json':
+                    data = JSON.stringify({
+                        locations,
+                        ideas,
+                        stats: {
+                            totalRatings: locations.reduce((sum, l) => sum + l.votes, 0),
+                            totalIdeas: ideas.length,
+                            activeUsers: currentUser.ratings
+                        }
+                    }, null, 2);
+                    filename = 'город_идей_данные.json';
+                    type = 'application/json';
+                    break;
+                case 'pdf':
+                    // В реальном приложении здесь был бы вызов API для генерации PDF
+                    showNotification('PDF экспорт в разработке', 'info');
+                    return;
+            }
+            
+            const blob = new Blob([data], { type });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification(`Данные экспортированы в ${format.toUpperCase()}`, 'success');
+        }
+
+        function convertToCSV() {
+            const headers = ['ID', 'Название', 'Категория', 'Рейтинг', 'Оценок', 'Чистота', 'Инфраструктура', 'Озеленение', 'Безопасность', 'Общее'];
+            const rows = locations.map(l => [
+                l.id,
+                `"${l.name}"`,
+                l.category,
+                l.rating.toFixed(2),
+                l.votes,
+                l.criteria.cleanliness.toFixed(2),
+                l.criteria.facilities.toFixed(2),
+                l.criteria.greenery.toFixed(2),
+                l.criteria.safety.toFixed(2),
+                l.criteria.overall.toFixed(2)
+            ]);
+            
+            return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+        }
+
+        // ========== УТИЛИТЫ ==========
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            const title = document.getElementById('notificationTitle');
+            const msg = document.getElementById('notificationMessage');
+            
+            // Устанавливаем иконку и цвет в зависимости от типа
+            switch(type) {
+                case 'success':
+                    icon.textContent = '🎉';
+                    notification.style.borderLeft = '4px solid var(--success)';
+                    title.textContent = 'Успех!';
+                    break;
+                case 'error':
+                    icon.textContent = '⚠️';
+                    notification.style.borderLeft = '4px solid var(--danger)';
+                    title.textContent = 'Ошибка!';
+                    break;
+                case 'info':
+                    icon.textContent = 'ℹ️';
+                    notification.style.borderLeft = '4px solid var(--primary)';
+                    title.textContent = 'Информация';
+                    break;
+            }
+            
+            msg.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = getRandomColor();
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 1000);
+            }
+        }
+
+        function getRandomColor() {
+            const colors = ['#2563EB', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                pending: 'На рассмотрении',
+                review: 'В работе',
+                progress: 'В процессе',
+                done: 'Выполнено'
+            };
+            return statuses[status] || status;
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        // Экспортируем функции для использования в HTML
+        window.switchPage = switchPage;
+        window.openRatingModal = openRatingModal;
+        window.closeRatingModal = closeRatingModal;
+        window.submitLocationRating = submitLocationRating;
+        window.submitIdea = submitIdea;
+        window.sortByRating = sortByRating;
+        window.sortByVotes = sortByVotes;
+        window.filterByCategory = filterByCategory;
+        window.exportData = exportData;
+        window.showAllLocations = showAllLocations;
+    </script>
+</body>
+</html>
+```
